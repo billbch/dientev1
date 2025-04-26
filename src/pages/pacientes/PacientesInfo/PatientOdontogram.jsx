@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-//import { motion, AnimatePresence } from 'framer-motion';
-import OdontogramScene from './odonto/OdontogramScene'; // Importa tu componente de escena de odontogram
+import { motion, AnimatePresence } from 'framer-motion';
+import OdontogramScene from './odonto/OdontogramScene';
+
 
 const PatientOdontogram = ({ patientData }) => {
   const [selectedTooth, setSelectedTooth] = useState(null);

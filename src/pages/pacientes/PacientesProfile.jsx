@@ -269,45 +269,48 @@ const PatientProfile = () => {
         <main>
           <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
             {/* Encabezado del perfil */}
-            <div className="mb-6">
-              <div className="flex items-center space-x-2">
-                <img
-                  src={patientData.profileImage}
-                  alt={patientData.name}
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{patientData.name}</h1>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>{patientData.email}</span>
-                    <span>•</span>
-                    <span>{patientData.phone}</span>
-                    <span>•</span>
-                    <span>{patientData.address}</span>
-                  </div>
-                </div>
-                <div className="flex items-center ml-auto space-x-3">
-                  <div className="flex items-center space-x-2 text-red-500 bg-red-50 px-3 py-1 rounded-full">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span className="text-sm font-medium">{patientData.alertNotes}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-blue-500">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm font-medium">{patientData.nextAppointment}</span>
-                  </div>
-                  <button className="btn bg-blue-500 hover:bg-blue-600 text-white">
-                    Nueva Cita
-                  </button>
-                  <button className="btn bg-gray-100 hover:bg-gray-200 text-gray-600">
-                    Notas
-                  </button>
-                </div>
-              </div>
-            </div>
+            <div className="mb-6 bg-white p-6 rounded-xl shadow-md flex items-center space-x-6">
+  <img
+    src={patientData.profileImage}
+    alt={patientData.name}
+    className="w-20 h-20 rounded-full object-cover border-2 border-blue-500"
+  />
+  <div className="flex-1">
+    <div className="flex items-center justify-between">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">{patientData.name}, <span className="text-gray-500 text-lg">{patientData.age}</span></h1>
+        <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600">
+          <span>📧 {patientData.email}</span>
+          <span>📞 {patientData.phone}</span>
+          <span>📍 {patientData.address}</span>
+        </div>
+      </div>
+      <div className="flex space-x-2">
+        <button className="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+          Nueva Cita
+        </button>
+        <button className="btn bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg">
+          Notas
+        </button>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-4 mt-4">
+      <div className="flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M4.938 4.938l14.124 14.124" />
+        </svg>
+        {patientData.alertNotes}
+      </div>
+      <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        Próxima: {patientData.nextAppointment}
+      </div>
+    </div>
+  </div>
+</div>
 
             {/* Barra de navegación */}
             <div className="relative mb-8">
