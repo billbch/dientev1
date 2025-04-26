@@ -152,7 +152,9 @@ const PatientOdontogram = ({ patientData }) => {
               </div>
             </div>
           </motion.div>
-        )}
+        )}:(
+          <></>
+        )
       </AnimatePresence>
     </div>
   );
