@@ -270,103 +270,66 @@ const PatientProfile = () => {
           <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
             {/* Encabezado del perfil */}
             <div className="mb-6 bg-white p-6 rounded-xl shadow-md flex items-center space-x-6">
-  <img
-    src={patientData.profileImage}
-    alt={patientData.name}
-    className="w-20 h-20 rounded-full object-cover border-2 border-blue-500"
-  />
-  <div className="flex-1">
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{patientData.name}, <span className="text-gray-500 text-lg">{patientData.age}</span></h1>
-        <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600">
-          <span>📧 {patientData.email}</span>
-          <span>📞 {patientData.phone}</span>
-          <span>📍 {patientData.address}</span>
-        </div>
-      </div>
-      <div className="flex space-x-2">
-        <button className="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-          Nueva Cita
-        </button>
-        <button className="btn bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg">
-          Notas
-        </button>
-      </div>
-    </div>
-
-    <div className="flex items-center gap-4 mt-4">
-      <div className="flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M4.938 4.938l14.124 14.124" />
-        </svg>
-        {patientData.alertNotes}
-      </div>
-      <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        Próxima: {patientData.nextAppointment}
-      </div>
-    </div>
-  </div>
-</div>
-
-            {/* Barra de navegación */}
-            <div className="relative mb-8">
-              <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center">
-                <button
-                  onClick={scrollLeft}
-                  className={`p-1 rounded-full bg-white shadow-md hover:bg-gray-50 ${
-                    !showLeftArrow && 'hidden'
-                  }`}
-                >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              </div>
-              
-              <div
-                ref={menuRef}
-                className="overflow-x-auto scrollbar-hide"
-                onScroll={checkScroll}
-              >
-                <div className="flex items-center px-8 space-x-1 bg-white rounded-lg shadow-sm border border-gray-100">
-                  {tabs.map((tab) => (
-                    <div
-                      key={tab.id}
-                      className="relative group"
-                    >
-                      <button
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`p-4 flex items-center justify-center transition-colors ${
-                          activeTab === tab.id
-                            ? 'text-blue-600 border-b-2 border-blue-600'
-                            : 'text-gray-500 hover:text-gray-900'
-                        }`}
-                      >
-                        {getIcon(tab.icon)}
-                      </button>
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {tab.label}
-                      </div>
+              <img
+                src={patientData.profileImage}
+                alt={patientData.name}
+                className="w-20 h-20 rounded-full object-cover border-2 border-blue-500"
+              />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">{patientData.name}, <span className="text-gray-500 text-lg">{patientData.age}</span></h1>
+                    <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600">
+                      <span>📧 {patientData.email}</span>
+                      <span>📞 {patientData.phone}</span>
+                      <span>📍 {patientData.address}</span>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex space-x-2">
+                    <button className="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                      Nueva Cita
+                    </button>
+                    <button className="btn bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg">
+                      Notas
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 mt-4">
+                  <div className="flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M4.938 4.938l14.124 14.124" />
+                    </svg>
+                    {patientData.alertNotes}
+                  </div>
+                  <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Próxima: {patientData.nextAppointment}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center">
-                <button
-                  onClick={scrollRight}
-                  className={`p-1 rounded-full bg-white shadow-md hover:bg-gray-50 ${
-                    !showRightArrow && 'hidden'
-                  }`}
-                >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+            {/* Barra de navegación */}
+            <div className="mb-8">
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex flex-col items-center justify-center py-2 px-2 rounded-lg transition-all ${activeTab === tab.id
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                      }`}
+                  >
+                    <div className="w-6 h-6 mb-1">
+                      {getIcon(tab.icon)}
+                    </div>
+                    <span className="text-[10px] font-medium">{tab.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
