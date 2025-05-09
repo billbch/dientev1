@@ -1,7 +1,7 @@
 // PatientOdontogramImage.jsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import odontogramaImage from '../../../../images/odontograma.jpg';
+import odontogramaImage from '../../../../images/odontograma2.png';
 import coronaIcon from '../../../../images/user-avatar-32.png';
 import implanteIcon from '../../../../images/user-avatar-32.png';
 import endodonciaIcon from '../../../../images/user-avatar-32.png';
@@ -83,23 +83,40 @@ const PatientOdontogramImage = () => {
   };
 
   const teethMap = [
-    { id: 18, top: '5%', left: '2%' }, { id: 17, top: '5%', left: '7%' },
-    { id: 16, top: '5%', left: '12%' }, { id: 15, top: '5%', left: '17%' },
-    { id: 14, top: '5%', left: '22%' }, { id: 13, top: '5%', left: '27%' },
-    { id: 12, top: '5%', left: '32%' }, { id: 11, top: '5%', left: '37%' },
-    { id: 21, top: '5%', left: '42%' }, { id: 22, top: '5%', left: '47%' },
-    { id: 23, top: '5%', left: '52%' }, { id: 24, top: '5%', left: '57%' },
-    { id: 25, top: '5%', left: '62%' }, { id: 26, top: '5%', left: '67%' },
-    { id: 27, top: '5%', left: '72%' }, { id: 28, top: '5%', left: '77%' },
-    { id: 48, top: '55%', left: '2%' }, { id: 47, top: '55%', left: '7%' },
-    { id: 46, top: '55%', left: '12%' }, { id: 45, top: '55%', left: '17%' },
-    { id: 44, top: '55%', left: '22%' }, { id: 43, top: '55%', left: '27%' },
-    { id: 42, top: '55%', left: '32%' }, { id: 41, top: '55%', left: '37%' },
-    { id: 31, top: '55%', left: '42%' }, { id: 32, top: '55%', left: '47%' },
-    { id: 33, top: '55%', left: '52%' }, { id: 34, top: '55%', left: '57%' },
-    { id: 35, top: '55%', left: '62%' }, { id: 36, top: '55%', left: '67%' },
-    { id: 37, top: '55%', left: '72%' }, { id: 38, top: '55%', left: '77%' },
+    { id: 18, top: '0%', left: '0%',    width: '7.4%' }, //1
+    { id: 17, top: '0%', left: '7.3%',  width: '7.4%' }, //2
+    { id: 16, top: '0%', left: '14.6%', width: '8%' }, //3
+    { id: 15, top: '0%', left: '22.5%', width: '5.2%' }, //4
+    { id: 14, top: '0%', left: '27.6%', width: '5.2%' }, //5
+    { id: 13, top: '0%', left: '32.7%', width: '6.5%' }, //6
+    { id: 12, top: '0%', left: '39%',   width: '5.0%' }, //7 
+    { id: 11, top: '0%', left: '43.9%', width: '6.2%' },//8
+    { id: 21, top: '0%', left: '50%',   width: '6.2%' },//9
+    { id: 22, top: '0%', left: '56.1%', width: '4.8%' },//10
+    { id: 23, top: '0%', left: '60.8%', width: '6.4%' },//11
+    { id: 24, top: '0%', left: '67.1%', width: '5.2%' },//12
+    { id: 25, top: '0%', left: '72.2%', width: '5.5%' },//13
+    { id: 26, top: '0%', left: '77.6%', width: '8.2%' },//14
+    { id: 27, top: '0%', left: '85.7%', width: '6.9%' },//15
+    { id: 28, top: '0%', left: '92.5%', width: '7.5%' },//16
+    { id: 48, top: '50%', left: '0.00%', width: '7.4%' },//17   ///mitad
+    { id: 47, top: '50%', left: '7.3%',  width: '7.4%' },//18    
+    { id: 46, top: '50%', left: '14.6%', width: '8%' }, //19
+    { id: 45, top: '50%', left: '22.5%', width: '5.2%' },//20
+    { id: 44, top: '50%', left: '27.6%', width: '5.2%' },//21
+    { id: 43, top: '50%', left: '32.7%', width: '6.5%' },//22
+    { id: 42, top: '50%', left: '39.0%', width: '5.0%' },//23
+    { id: 41, top: '50%', left: '43.9%', width: '6.2%' },//24
+    { id: 31, top: '50%', left: '50.0%', width: '6.2%' },//25
+    { id: 32, top: '50%', left: '56.1%', width: '4.8%' },//26
+    { id: 33, top: '50%', left: '60.8%', width: '6.4%' },//27
+    { id: 34, top: '50%', left: '67.1%', width: '5.2%' },//28
+    { id: 35, top: '50%', left: '72.2%', width: '5.5%' },//29
+    { id: 36, top: '50%', left: '77.6%', width: '8.2%' },//30
+    { id: 37, top: '50%', left: '85.7%', width: '6.9%' },//31
+    { id: 38, top: '50%', left: '92.5%', width: '7.5%' },//32
   ];
+
 
   return (
     <div className="space-y-6">
@@ -113,10 +130,18 @@ const PatientOdontogramImage = () => {
           {teethMap.map((tooth) => (
             <div
               key={tooth.id}
-              style={{ position: 'absolute', top: tooth.top, left: tooth.left, width: '5%', height: '10%' }}
-              className={`cursor-pointer ${selectedTooth === tooth.id ? 'bg-blue-200 bg-opacity-50 rounded-full' : ''}`}
+              style={{
+                position: 'absolute',
+                top: tooth.top,
+                left: tooth.left,
+                width: tooth.width,
+                height: '50%',
+                border: '1px solid red',   // 🔥 AGREGAMOS ESTA LINEA
+              }}
+              className={`cursor-pointer ${selectedTooth === tooth.id ? 'bg-blue-200 bg-opacity-50 rounded-md' : ''}`}
               onClick={() => handleToothClick(tooth.id)}
             >
+              {/* Icono si hay tratamiento */}
               {toothTreatments[tooth.id] && treatmentIcons[toothTreatments[tooth.id]] && (
                 <img src={treatmentIcons[toothTreatments[tooth.id]]} alt="Tratamiento" className="w-full h-full object-contain" />
               )}
