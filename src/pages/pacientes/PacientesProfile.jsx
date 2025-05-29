@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Sidebar from '../../partials/Sidebar';
 import Header from '../../partials/Header';
+import PatientPersonalInfo from './PacientesInfo/PatientPersonalInfo';
 import PatientMedicalHistory from './PacientesInfo/PatientMedicalHistory';
 import PatientEvolutions from './PacientesInfo/PatientEvolutions';
 import PatientAnamnesis from './PacientesInfo/PatientConsents';
@@ -11,6 +12,7 @@ import PatientRadiographs from './PacientesInfo/PatientRadiographs';
 import PatientPrescriptions from './PacientesInfo/PatientPrescriptions';
 import PatientClinicalDocuments from './PacientesInfo/PatientClinicalDocuments';
 import PatientConsents from './PacientesInfo/PatientConsents';
+import PatientDentalHistory from './PacientesInfo/PatientDentalHistory';
 
 const PatientProfile = () => {
   const { patientId } = useParams();
@@ -76,6 +78,7 @@ const PatientProfile = () => {
   const tabs = [
     { id: 'info', label: 'Información Personal', icon: 'user' },
     { id: 'medical', label: 'Historial Médico', icon: 'heart' },
+    { id: 'dental', label: 'Historial Odontológico', icon: 'tooth' },
     { id: 'evolutions', label: 'Evoluciones', icon: 'chart-line' },
     { id: 'anamnesis', label: 'Anamnesis', icon: 'clipboard-list' },
     { id: 'odontogram', label: 'Odontograma', icon: 'tooth' },
@@ -90,59 +93,11 @@ const PatientProfile = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'info':
-        return (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-blue-600 mb-4">Información Personal</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">Datos Personales</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Nombre Completo</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.name}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.email}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.phone}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Dirección</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.address}</p>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">Información Médica</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.birthDate}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Género</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.gender}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Grupo Sanguíneo</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.bloodType}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Estado</label>
-                      <p className="mt-1 text-sm text-gray-900">{patientData.status}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <PatientPersonalInfo patientData={patientData} />;
       case 'medical':
         return <PatientMedicalHistory patientData={patientData} />;
+      case 'dental':
+        return <PatientDentalHistory patientData={patientData} />;
       case 'evolutions':
         return <PatientEvolutions patientData={patientData} />;
       case 'anamnesis':
@@ -266,75 +221,83 @@ const PatientProfile = () => {
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main>
-          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-            {/* Encabezado del perfil */}
-            <div className="mb-6 bg-white p-6 rounded-xl shadow-md flex items-center space-x-6">
-              <img
-                src={patientData.profileImage}
-                alt={patientData.name}
-                className="w-20 h-20 rounded-full object-cover border-2 border-blue-500"
-              />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{patientData.name}, <span className="text-gray-500 text-lg">{patientData.age}</span></h1>
-                    <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600">
-                      <span>📧 {patientData.email}</span>
-                      <span>📞 {patientData.phone}</span>
-                      <span>📍 {patientData.address}</span>
+        <main className="flex-1">
+          <div className="px-4 sm:px-6 lg:px-8 py-4 w-full max-w-9xl mx-auto">
+            {/* Contenedor principal que integra la información del paciente y el contenido */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+              {/* Encabezado del perfil - Rediseñado para ser más compacto */}
+              <div className="p-4 border-b border-gray-100">
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={patientData.profileImage}
+                    alt={patientData.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h1 className="text-xl font-bold text-gray-900">{patientData.name}, <span className="text-gray-500 text-base">{patientData.age}</span></h1>
+                        <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600">
+                          <span>📧 {patientData.email}</span>
+                          <span>📞 {patientData.phone}</span>
+                          <span>📍 {patientData.address}</span>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button className="btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm">
+                          Nueva Cita
+                        </button>
+                        <button className="btn bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm">
+                          Notas
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button className="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                      Nueva Cita
-                    </button>
-                    <button className="btn bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg">
-                      Notas
-                    </button>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-4 mt-4">
-                  <div className="flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M4.938 4.938l14.124 14.124" />
-                    </svg>
-                    {patientData.alertNotes}
-                  </div>
-                  <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Próxima: {patientData.nextAppointment}
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="flex items-center gap-1.5 bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M4.938 4.938l14.124 14.124" />
+                        </svg>
+                        {patientData.alertNotes}
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Próxima: {patientData.nextAppointment}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Barra de navegación */}
-            <div className="mb-8">
-              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex flex-col items-center justify-center py-2 px-2 rounded-lg transition-all ${activeTab === tab.id
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+              {/* Barra de navegación - Rediseñada para ser más compacta y estar integrada */}
+              <div className="border-b border-gray-100">
+                <div className="flex space-x-1 p-2 overflow-x-auto">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                        activeTab === tab.id
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
-                  >
-                    <div className="w-6 h-6 mb-1">
-                      {getIcon(tab.icon)}
-                    </div>
-                    <span className="text-[10px] font-medium">{tab.label}</span>
-                  </button>
-                ))}
+                    >
+                      <div className="w-4 h-4">
+                        {getIcon(tab.icon)}
+                      </div>
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contenido del tab activo - Ahora integrado en el mismo card */}
+              <div className="p-4">
+                {renderTabContent()}
               </div>
             </div>
-
-            {/* Contenido del tab activo */}
-            {renderTabContent()}
           </div>
         </main>
       </div>
