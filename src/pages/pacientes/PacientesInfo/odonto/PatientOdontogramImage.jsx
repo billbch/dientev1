@@ -1,15 +1,64 @@
 // PatientOdontogramImage.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import odontogramaImage from '../../../../images/odontograma2.png';
-import coronaIcon from '../../../../images/user-avatar-32.png';
-import implanteIcon from '../../../../images/user-avatar-32.png';
+import coronaIcon from '../../../../images/odontograma/corona.png';
+import implanteIcon from '../../../../images/odontograma/implante.png';
 import endodonciaIcon from '../../../../images/user-avatar-32.png';
 
 const treatmentIcons = {
   "Corona": coronaIcon,
   "Implante": implanteIcon,
   "Endodoncia": endodonciaIcon
+};
+
+// Componente para los controles de dibujo
+const DrawingControls = ({ selectedColor, setSelectedColor, isDrawingMode, setIsDrawingMode }) => {
+  const colors = [
+    { name: 'Rojo', value: '#FF0000' },
+    { name: 'Azul', value: '#0000FF' },
+    { name: 'Negro', value: '#000000' }
+  ];
+
+  return (
+    <div className="flex items-center space-x-4 mb-4">
+      <div className="flex space-x-2">
+        {colors.map(color => (
+          <button
+            key={color.value}
+            onClick={() => setSelectedColor(color.value)}
+            className={`w-8 h-8 rounded-full border-2 ${
+              selectedColor === color.value ? 'border-blue-500' : 'border-gray-300'
+            }`}
+            style={{ backgroundColor: color.value }}
+            title={color.name}
+          />
+        ))}
+      </div>
+      <div className="flex space-x-2">
+        <button
+          onClick={() => setIsDrawingMode(true)}
+          className={`px-4 py-2 rounded ${
+            isDrawingMode 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Modo Dibujo
+        </button>
+        <button
+          onClick={() => setIsDrawingMode(false)}
+          className={`px-4 py-2 rounded ${
+            !isDrawingMode 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Modo Selección
+        </button>
+      </div>
+    </div>
+  );
 };
 
 const ToothPanel = ({ selectedTooth, setTreatment, onClose }) => {
@@ -63,6 +112,109 @@ const PatientOdontogramImage = () => {
   const [selectedTooth, setSelectedTooth] = useState(null);
   const [showPanel, setShowPanel] = useState(false);
   const [toothTreatments, setToothTreatments] = useState({});
+  
+  // Estados para el dibujo
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('#000000');
+  const [strokes, setStrokes] = useState([]);
+  const [currentStroke, setCurrentStroke] = useState(null);
+  
+  const canvasRef = useRef(null);
+  const imageRef = useRef(null);
+
+  // Configurar el canvas cuando se monta el componente
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Ajustar el tamaño del canvas al de la imagen
+    const updateCanvasSize = () => {
+      if (imageRef.current) {
+        canvas.width = imageRef.current.width;
+        canvas.height = imageRef.current.height;
+        // Redibujar todos los trazos
+        redrawStrokes();
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
+    return () => window.removeEventListener('resize', updateCanvasSize);
+  }, []);
+
+  // Función para redibujar todos los trazos
+  const redrawStrokes = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    strokes.forEach(stroke => {
+      ctx.beginPath();
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      stroke.points.forEach((point, index) => {
+        if (index === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
+
+      ctx.stroke();
+    });
+  };
+
+  // Manejadores de eventos del mouse
+  const handleMouseDown = (e) => {
+    if (!isDrawingMode) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setCurrentStroke({
+      color: selectedColor,
+      points: [{ x, y }]
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDrawingMode || !currentStroke) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setCurrentStroke(prev => ({
+      ...prev,
+      points: [...prev.points, { x, y }]
+    }));
+
+    // Dibujar el trazo actual
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.strokeStyle = selectedColor;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    const points = currentStroke.points;
+    ctx.moveTo(points[points.length - 2].x, points[points.length - 2].y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const handleMouseUp = () => {
+    if (currentStroke) {
+      setStrokes(prev => [...prev, currentStroke]);
+      setCurrentStroke(null);
+    }
+  };
 
   const handleToothClick = (toothNumber) => {
     setSelectedTooth(toothNumber);
@@ -125,8 +277,21 @@ const PatientOdontogramImage = () => {
           <span className="text-3xl">🦷</span>
           <h3 className="text-lg font-semibold text-blue-600">Odontograma Imagen</h3>
         </div>
+
+        <DrawingControls
+          selectedColor={selectedColor}
+          setSelectedColor={setSelectedColor}
+          isDrawingMode={isDrawingMode}
+          setIsDrawingMode={setIsDrawingMode}
+        />
+
         <div className="relative">
-          <img src={odontogramaImage} alt="Odontograma" className="w-full" />
+          <img 
+            ref={imageRef}
+            src={odontogramaImage} 
+            alt="Odontograma" 
+            className="w-full" 
+          />
           {teethMap.map((tooth) => (
             <div
               key={tooth.id}
@@ -136,17 +301,30 @@ const PatientOdontogramImage = () => {
                 left: tooth.left,
                 width: tooth.width,
                 height: '50%',
-                border: '1px solid red',   // 🔥 AGREGAMOS ESTA LINEA
+                zIndex: isDrawingMode ? 0 : 1,
+                pointerEvents: isDrawingMode ? 'none' : 'auto'
               }}
               className={`cursor-pointer ${selectedTooth === tooth.id ? 'bg-blue-200 bg-opacity-50 rounded-md' : ''}`}
-              onClick={() => handleToothClick(tooth.id)}
+              onClick={() => !isDrawingMode && handleToothClick(tooth.id)}
             >
-              {/* Icono si hay tratamiento */}
               {toothTreatments[tooth.id] && treatmentIcons[toothTreatments[tooth.id]] && (
-                <img src={treatmentIcons[toothTreatments[tooth.id]]} alt="Tratamiento" className="w-full h-full object-contain" />
+                <img 
+                  src={treatmentIcons[toothTreatments[tooth.id]]} 
+                  alt="Tratamiento" 
+                  style={{ position: 'absolute', top: '15%', left: 0, right: 0, width: '100px' }} 
+                />
               )}
             </div>
           ))}
+          <canvas
+            ref={canvasRef}
+            className="absolute top-0 left-0 w-full h-full"
+            style={{ zIndex: 2, pointerEvents: isDrawingMode ? 'auto' : 'none' }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          />
         </div>
       </div>
 

@@ -80,7 +80,6 @@ const PatientProfile = () => {
     { id: 'medical', label: 'Historial Médico', icon: 'heart' },
     { id: 'dental', label: 'Historial Odontológico', icon: 'tooth' },
     { id: 'evolutions', label: 'Evoluciones', icon: 'chart-line' },
-    { id: 'anamnesis', label: 'Anamnesis', icon: 'clipboard-list' },
     { id: 'odontogram', label: 'Odontograma', icon: 'tooth' },
     { id: 'periodontogram', label: 'Periodontograma', icon: 'gums' },
     { id: 'rx', label: 'Rx y Documentos', icon: 'x-ray' },
@@ -100,8 +99,6 @@ const PatientProfile = () => {
         return <PatientDentalHistory patientData={patientData} />;
       case 'evolutions':
         return <PatientEvolutions patientData={patientData} />;
-      case 'anamnesis':
-        return <PatientAnamnesis patientData={patientData} />;
       case 'odontogram':
         return <PatientOdontogram patientData={patientData} />;
       case 'periodontogram':

@@ -9,6 +9,44 @@ const teethNumbers = [
   31, 32, 33, 34, 35, 36, 37, 38
 ];
 
+const toothSegmentsMap = {
+  // Upper teeth (18-28)
+  18: { top: '0%', left: '00%', width: '7.4%',   height: '50%' },
+  17: { top: '0%', left: '7.4%', width: '7%',    height: '50%' },
+  16: { top: '0%', left: '14.4%', width: '8.1%', height: '50%' },
+  15: { top: '0%', left: '22.5%', width: '5%',   height: '50%' },
+  14: { top: '0%', left: '27.5%', width: '5.3%', height: '50%' },
+  13: { top: '0%', left: '32.8%', width: '6.3%', height: '50%' },
+  12: { top: '0%', left: '39%', width: '4.9%',   height: '50%' },
+  11: { top: '0%', left: '43.8%', width: '6.1%', height: '50%' },
+  21: { top: '0%', left: '49.8%', width: '6.4%', height: '50%' },
+  22: { top: '0%', left: '56.1%', width: '4.7%', height: '50%' },
+  23: { top: '0%', left: '60.7%', width: '6.4%', height: '50%' },
+  24: { top: '0%', left: '67%', width: '5.3%',   height: '50%' },
+  25: { top: '0%', left: '72.2%', width: '5.2%', height: '50%' },
+  26: { top: '0%', left: '77.3%', width: '8.3%', height: '50%' },
+  27: { top: '0%', left: '85.5%', width: '7%',   height: '50%' },
+  28: { top: '0%', left: '92.4%', width: '7.6%', height: '50%' },
+
+  // Lower teeth (48-38)
+  48: { top: '50%', left: '00%', width: '7.4%',   height: '50%' },
+  47: { top: '50%', left: '7.4%', width: '7%',    height: '50%' },
+  46: { top: '50%', left: '14.4%', width: '8.1%', height: '50%' },
+  45: { top: '50%', left: '22.5%', width: '5%',   height: '50%' },
+  44: { top: '50%', left: '27.5%', width: '5.3%', height: '50%' },
+  43: { top: '50%', left: '32.8%', width: '6.3%', height: '50%' },
+  42: { top: '50%', left: '39%', width: '4.9%',   height: '50%' },
+  41: { top: '50%', left: '43.8%', width: '6.1%', height: '50%' },
+  31: { top: '50%', left: '49.8%', width: '6.4%', height: '50%' },
+  32: { top: '50%', left: '56.1%', width: '4.7%', height: '50%' },
+  33: { top: '50%', left: '60.7%', width: '6.4%', height: '50%' },
+  34: { top: '50%', left: '67%', width: '5.3%',   height: '50%' },
+  35: { top: '50%', left: '72.2%', width: '5.2%', height: '50%' },
+  36: { top: '50%', left: '77.3%', width: '8.3%', height: '50%' },
+  37: { top: '50%', left: '85.5%', width: '7%',   height: '50%' },
+  38: { top: '50%', left: '92.4%', width: '7.6%', height: '50%' },
+};
+
 const mobilityOptions = ["Grado 1", "Grado 2", "Grado 3"];
 const prognosisOptions = ["B", "R", "M"];
 const furcationIcons = {
@@ -37,16 +75,29 @@ const PatientPeriodontogram = () => {
 
   const renderOverlayIcon = (tooth, index) => {
     const data = teethData[tooth] || {};
-    const row = Math.floor(index / 16);
-    const col = index % 16;
-    const top = 15 + row * 45;
-    const left = col * 6.25 + 2.5;
+    // Usamos el mapa para obtener la posición base
+    const segment = toothSegmentsMap[tooth];
+    if (!segment) return null; // Should not happen if toothNumbers and toothSegmentsMap are in sync
+
+    const topBase = parseFloat(segment.top);
+    const leftBase = parseFloat(segment.left);
+    const widthBase = parseFloat(segment.width);
+    const heightBase = parseFloat(segment.height);
+
+    // Ajustamos ligeramente la posición del ícono dentro del segmento
+    const topOffset = heightBase * 0.2; // 20% de la altura del segmento
+    const leftOffset = widthBase * 0.4; // Centrar el ícono aproximadamente
 
     if (data.Existe === false) {
       return (
         <div
           key={`missing-${tooth}`}
-          style={{ position: 'absolute', top: `${top + 10}%`, left: `${left}%`, zIndex: 20 }}
+          style={{ 
+            position: 'absolute', 
+            top: `${topBase + topOffset}%`, 
+            left: `${leftBase + leftOffset}%`, 
+            zIndex: 20 
+          }}
           className="text-red-600 text-xl font-bold"
         >
           ✖
@@ -58,7 +109,12 @@ const PatientPeriodontogram = () => {
       return (
         <div
           key={`implant-${tooth}`}
-          style={{ position: 'absolute', top: `${top + 10}%`, left: `${left}%`, zIndex: 20 }}
+          style={{ 
+            position: 'absolute', 
+            top: `${topBase + topOffset}%`, 
+            left: `${leftBase + leftOffset}%`, 
+            zIndex: 20 
+          }}
           className="text-purple-600 text-xl font-bold"
         >
           🦷
@@ -66,11 +122,19 @@ const PatientPeriodontogram = () => {
       );
     }
 
+    // Ajuste para la furcación para que esté un poco más abajo
+    const furcationTopOffset = heightBase * 0.55; // 50% de la altura del segmento
+
     if (data.Furcacion && furcationIcons[data.Furcacion]) {
       return (
         <div
           key={`furcation-${tooth}`}
-          style={{ position: 'absolute', top: `${top + 25}%`, left: `${left}%`, zIndex: 20 }}
+          style={{
+            position: 'absolute', 
+            top: `${topBase + furcationTopOffset}%`, // Posición ajustada
+            left: `${leftBase + leftOffset}%`, 
+            zIndex: 20 
+          }}
           className="text-black text-xl"
         >
           {furcationIcons[data.Furcacion]}
@@ -85,21 +149,29 @@ const PatientPeriodontogram = () => {
     <div className="space-y-6">
       <div className="relative w-full max-w-6xl mx-auto">
         <img src={periodontogramImage} alt="Periodontograma" className="w-full h-auto" />
-        {teethNumbers.map((tooth, index) => (
-          <div
-            key={tooth}
-            style={{
-              position: 'absolute',
-              top: `${15 + Math.floor(index / 16) * 45}%`,
-              left: `${(index % 16) * 6.25}%`,
-              width: '6.25%',
-              height: '45%',
-              zIndex: 10,
-            }}
-            className="cursor-pointer"
-            onClick={() => handleToothClick(tooth)}
-          />
-        ))}
+        {teethNumbers.map((tooth) => {
+          const segment = toothSegmentsMap[tooth];
+          if (!segment) return null; // Should not happen
+
+          return (
+            <div
+              key={tooth}
+              style={{
+                position: 'absolute',
+                top: segment.top,
+                left: segment.left,
+                width: segment.width,
+                height: segment.height,
+                zIndex: 10,
+                border: '1px solid red',
+                boxSizing: 'border-box',
+                backgroundColor: 'transparent'
+              }}
+              className="cursor-pointer"
+              onClick={() => handleToothClick(tooth)}
+            />
+          );
+        })}
         {teethNumbers.map((tooth, index) => renderOverlayIcon(tooth, index))}
       </div>
 
