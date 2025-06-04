@@ -1,280 +1,211 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import periodontogramImage from '../../../images/periodontograma.png';
+import React, { useState } from "react";
+import periodontogramImage from "../../../images/periodontograma/periodontograma.png"; // Tu imagen
 
-const teethNumbers = [
-  18, 17, 16, 15, 14, 13, 12, 11,
-  21, 22, 23, 24, 25, 26, 27, 28,
-  48, 47, 46, 45, 44, 43, 42, 41,
-  31, 32, 33, 34, 35, 36, 37, 38
-];
+const upperTeeth = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const lowerTeeth = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
 
-const toothSegmentsMap = {
-  // Upper teeth (18-28)
-  18: { top: '0%', left: '00%', width: '7.4%',   height: '50%' },
-  17: { top: '0%', left: '7.4%', width: '7%',    height: '50%' },
-  16: { top: '0%', left: '14.4%', width: '8.1%', height: '50%' },
-  15: { top: '0%', left: '22.5%', width: '5%',   height: '50%' },
-  14: { top: '0%', left: '27.5%', width: '5.3%', height: '50%' },
-  13: { top: '0%', left: '32.8%', width: '6.3%', height: '50%' },
-  12: { top: '0%', left: '39%', width: '4.9%',   height: '50%' },
-  11: { top: '0%', left: '43.8%', width: '6.1%', height: '50%' },
-  21: { top: '0%', left: '49.8%', width: '6.4%', height: '50%' },
-  22: { top: '0%', left: '56.1%', width: '4.7%', height: '50%' },
-  23: { top: '0%', left: '60.7%', width: '6.4%', height: '50%' },
-  24: { top: '0%', left: '67%', width: '5.3%',   height: '50%' },
-  25: { top: '0%', left: '72.2%', width: '5.2%', height: '50%' },
-  26: { top: '0%', left: '77.3%', width: '8.3%', height: '50%' },
-  27: { top: '0%', left: '85.5%', width: '7%',   height: '50%' },
-  28: { top: '0%', left: '92.4%', width: '7.6%', height: '50%' },
+function initToothData() {
+  const data = {};
+  [...upperTeeth, ...lowerTeeth].forEach(n => {
+    data[n] = {
+      movilidad: '',
+      implante: false,
+      furca: '',
+      sangrado: [false, false, false],
+      placa: [false, false, false],
+      margen: ['', '', ''],
+      sondaje: ['', '', ''],
+      nota: ''
+    };
+  });
+  return data;
+}
 
-  // Lower teeth (48-38)
-  48: { top: '50%', left: '00%', width: '7.4%',   height: '50%' },
-  47: { top: '50%', left: '7.4%', width: '7%',    height: '50%' },
-  46: { top: '50%', left: '14.4%', width: '8.1%', height: '50%' },
-  45: { top: '50%', left: '22.5%', width: '5%',   height: '50%' },
-  44: { top: '50%', left: '27.5%', width: '5.3%', height: '50%' },
-  43: { top: '50%', left: '32.8%', width: '6.3%', height: '50%' },
-  42: { top: '50%', left: '39%', width: '4.9%',   height: '50%' },
-  41: { top: '50%', left: '43.8%', width: '6.1%', height: '50%' },
-  31: { top: '50%', left: '49.8%', width: '6.4%', height: '50%' },
-  32: { top: '50%', left: '56.1%', width: '4.7%', height: '50%' },
-  33: { top: '50%', left: '60.7%', width: '6.4%', height: '50%' },
-  34: { top: '50%', left: '67%', width: '5.3%',   height: '50%' },
-  35: { top: '50%', left: '72.2%', width: '5.2%', height: '50%' },
-  36: { top: '50%', left: '77.3%', width: '8.3%', height: '50%' },
-  37: { top: '50%', left: '85.5%', width: '7%',   height: '50%' },
-  38: { top: '50%', left: '92.4%', width: '7.6%', height: '50%' },
-};
+export default function PatientPeriodontogram() {
+  const [teeth, setTeeth] = useState(initToothData());
 
-const mobilityOptions = ["Grado 1", "Grado 2", "Grado 3"];
-const prognosisOptions = ["B", "R", "M"];
-const furcationIcons = {
-  "Grado 1": "○",
-  "Grado 2": "◐",
-  "Grado 3": "●"
-};
-
-const PatientPeriodontogram = () => {
-  const [selectedTooth, setSelectedTooth] = useState(null);
-  const [teethData, setTeethData] = useState({});
-
-  const handleToothClick = (tooth) => {
-    setSelectedTooth(tooth);
-  };
-
-  const handleFieldChange = (field, value) => {
-    setTeethData(prev => ({
+  const handleChange = (tooth, field, value) => {
+    setTeeth(prev => ({
       ...prev,
-      [selectedTooth]: {
-        ...prev[selectedTooth],
-        [field]: value
-      }
+      [tooth]: { ...prev[tooth], [field]: value }
     }));
   };
 
-  const renderOverlayIcon = (tooth, index) => {
-    const data = teethData[tooth] || {};
-    // Usamos el mapa para obtener la posición base
-    const segment = toothSegmentsMap[tooth];
-    if (!segment) return null; // Should not happen if toothNumbers and toothSegmentsMap are in sync
-
-    const topBase = parseFloat(segment.top);
-    const leftBase = parseFloat(segment.left);
-    const widthBase = parseFloat(segment.width);
-    const heightBase = parseFloat(segment.height);
-
-    // Ajustamos ligeramente la posición del ícono dentro del segmento
-    const topOffset = heightBase * 0.2; // 20% de la altura del segmento
-    const leftOffset = widthBase * 0.4; // Centrar el ícono aproximadamente
-
-    if (data.Existe === false) {
-      return (
+  // Helpers para grids
+  const inputGrid = (arr, onChange, color) => (
+    <div className="flex gap-1 justify-center">
+      {arr.map((v, i) => (
         <div
-          key={`missing-${tooth}`}
-          style={{ 
-            position: 'absolute', 
-            top: `${topBase + topOffset}%`, 
-            left: `${leftBase + leftOffset}%`, 
-            zIndex: 20 
-          }}
-          className="text-red-600 text-xl font-bold"
-        >
-          ✖
-        </div>
-      );
-    }
+          key={i}
+          onClick={() => onChange(i, !v)}
+          className={`w-5 h-5 border rounded cursor-pointer transition 
+            ${v ? color : "bg-gray-100 hover:bg-gray-200"}`}
+        />
+      ))}
+    </div>
+  );
+  const numberGrid = (arr, onChange) => (
+    <div className="flex gap-1 justify-center">
+      {arr.map((v, i) => (
+        <input
+          key={i}
+          type="number"
+          value={v}
+          onChange={e => onChange(i, e.target.value)}
+          className="w-4 text-xs border rounded text-center px-0.5 py-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          style={{ minWidth: 20 }}
+          placeholder="-"
+        />
+      ))}
+    </div>
+  );
 
-    if (data.Implante) {
-      return (
-        <div
-          key={`implant-${tooth}`}
-          style={{ 
-            position: 'absolute', 
-            top: `${topBase + topOffset}%`, 
-            left: `${leftBase + leftOffset}%`, 
-            zIndex: 20 
-          }}
-          className="text-purple-600 text-xl font-bold"
-        >
-          🦷
-        </div>
-      );
-    }
+  function TeethTable({ arcada }) {
+    const teethRow = arcada === "superior" ? upperTeeth : lowerTeeth;
+    
+    const rowOrder = [
+      { label: "Movilidad", field: "movilidad", type: "cycle-select", options: ["", "Grado 1", "Grado 2", "Grado 3"] },
+      { label: "Implante", field: "implante", type: "checkbox" },
+      { label: "Furcación", field: "furca", type: "cycle-select", options: ["", "1", "2", "3"] },
+      { label: "Sangrado", field: "sangrado", type: "bool3", color: "bg-red-400" },
+      { label: "Placa", field: "placa", type: "bool3", color: "bg-blue-400" },
+      { label: "MG", field: "margen", type: "number3" },
+      { label: "PS", field: "sondaje", type: "number3" },
+    ];
 
-    // Ajuste para la furcación para que esté un poco más abajo
-    const furcationTopOffset = heightBase * 0.55; // 50% de la altura del segmento
+    const displayedRows = arcada === "superior" ? rowOrder : [...rowOrder].reverse();
 
-    if (data.Furcacion && furcationIcons[data.Furcacion]) {
-      return (
-        <div
-          key={`furcation-${tooth}`}
-          style={{
-            position: 'absolute', 
-            top: `${topBase + furcationTopOffset}%`, // Posición ajustada
-            left: `${leftBase + leftOffset}%`, 
-            zIndex: 20 
-          }}
-          className="text-black text-xl"
-        >
-          {furcationIcons[data.Furcacion]}
-        </div>
-      );
-    }
+    const handleCycleSelect = (tooth, field, currentValue, options) => {
+        const currentIndex = options.indexOf(currentValue);
+        const nextIndex = (currentIndex + 1) % options.length;
+        const nextValue = options[nextIndex];
+        handleChange(tooth, field, nextValue);
+    };
 
-    return null;
+    return (
+      <table className="min-w-full border-separate border-spacing-y-1 table-fixed">
+        <thead>
+          <tr>
+            <th className="bg-transparent"></th>
+            {teethRow.map(n => (
+              <th key={n} className="text-xs text-blue-800 font-bold py-1">{n}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {displayedRows.map((row) => (
+            <tr key={row.label}>
+              <td className="text-right pr-1 text-gray-600 text-xs">{row.label}</td>
+              {teethRow.map(n => (
+                <td key={n}>
+                  {row.type === "select" && (
+                    <select
+                      value={teeth[n][row.field]}
+                      onChange={e => handleChange(n, row.field, e.target.value)}
+                      className="w-10 text-xs border px-1 py-0 rounded bg-white"
+                    >
+                      {row.options.map(opt => (
+                        <option key={opt} value={opt}>
+                          {row.field === "furca" && opt === "1" ? "○"
+                          : row.field === "furca" && opt === "2" ? "◐"
+                          : row.field === "furca" && opt === "3" ? "●"
+                          : opt || "-"}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {row.type === "checkbox" && (
+                    <div className="flex justify-center">
+                      <input
+                        type="checkbox"
+                        checked={teeth[n][row.field]}
+                        onChange={e => handleChange(n, row.field, e.target.checked)}
+                        className="w-4 h-4 accent-blue-500"
+                      />
+                    </div>
+                  )}
+                  {row.type === "bool3" && inputGrid(
+                    teeth[n][row.field],
+                    (i, val) => {
+                      const arr = [...teeth[n][row.field]];
+                      arr[i] = val;
+                      handleChange(n, row.field, arr);
+                    },
+                    row.color
+                  )}
+                  {row.type === "number3" && numberGrid(
+                    teeth[n][row.field],
+                    (i, val) => {
+                      const arr = [...teeth[n][row.field]];
+                      arr[i] = val;
+                      handleChange(n, row.field, arr);
+                    }
+                  )}
+                  {row.type === "cycle-select" && (
+                    <div
+                      className="w-10 h-6 text-xs border rounded flex items-center justify-center cursor-pointer bg-white hover:bg-gray-100"
+                      onClick={() => handleCycleSelect(n, row.field, teeth[n][row.field], row.options)}
+                    >
+                       {/* Display logic for cycle-select */}
+                      {row.field === "furca" && teeth[n][row.field] === "1" ? "○"
+                       : row.field === "furca" && teeth[n][row.field] === "2" ? "◐"
+                       : row.field === "furca" && teeth[n][row.field] === "3" ? "●"
+                       : teeth[n][row.field] || "-"}
+                    </div>
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+
+  // Mapa aproximado para números sobre los dientes (ajusta top/left a tu imagen)
+  const toothNumberPosition = {
+    ...Object.fromEntries(upperTeeth.map((n, i) => [n, { top: "8%", left: `${3 + i * 6}%` }])),
+    ...Object.fromEntries(lowerTeeth.map((n, i) => [n, { top: "84%", left: `${3 + i * 6}%` }]))
   };
 
   return (
-    <div className="space-y-6">
-      <div className="relative w-full max-w-6xl mx-auto">
-        <img src={periodontogramImage} alt="Periodontograma" className="w-full h-auto" />
-        {teethNumbers.map((tooth) => {
-          const segment = toothSegmentsMap[tooth];
-          if (!segment) return null; // Should not happen
-
-          return (
-            <div
-              key={tooth}
-              style={{
-                position: 'absolute',
-                top: segment.top,
-                left: segment.left,
-                width: segment.width,
-                height: segment.height,
-                zIndex: 10,
-                border: '1px solid red',
-                boxSizing: 'border-box',
-                backgroundColor: 'transparent'
-              }}
-              className="cursor-pointer"
-              onClick={() => handleToothClick(tooth)}
+    <div className="w-full flex flex-col items-center gap-4 py-4 bg-gray-50">
+      <style>{`
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+      `}</style>
+      <div className=" w-full mx-auto px-1 md:px-4">
+        <div className="overflow-x-auto rounded-lg bg-white p-4 shadow border">
+          <TeethTable arcada="superior" />
+          <div className="relative flex justify-center my-2">
+            <img
+              src={periodontogramImage}
+              alt="Periodontograma"
+              className=" w-full bg-white rounded-xl shadow border"
+              draggable={false}
             />
-          );
-        })}
-        {teethNumbers.map((tooth, index) => renderOverlayIcon(tooth, index))}
-      </div>
-
-      {selectedTooth && (
-        <motion.div className="bg-white p-6 rounded shadow-md max-w-4xl mx-auto">
-          <h3 className="text-xl font-semibold mb-4 text-blue-600">Diente {selectedTooth}</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <label>
-              <input type="checkbox" checked={teethData[selectedTooth]?.Implante || false} onChange={(e) => handleFieldChange('Implante', e.target.checked)} /> Implante
-            </label>
-            <label>
-              <input type="checkbox" checked={teethData[selectedTooth]?.Existe !== false} onChange={(e) => handleFieldChange('Existe', e.target.checked)} /> Diente presente
-            </label>
-            <div>
-              <label>Movilidad</label>
-              <select value={teethData[selectedTooth]?.Movilidad || ''} onChange={(e) => handleFieldChange('Movilidad', e.target.value)} className="w-full border px-2 py-1 rounded">
-                <option value="">--</option>
-                {mobilityOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Pronóstico individual</label>
-              <select value={teethData[selectedTooth]?.Pronostico || ''} onChange={(e) => handleFieldChange('Pronostico', e.target.value)} className="w-full border px-2 py-1 rounded">
-                <option value="">--</option>
-                {prognosisOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Furcación</label>
-              <select value={teethData[selectedTooth]?.Furcacion || ''} onChange={(e) => handleFieldChange('Furcacion', e.target.value)} className="w-full border px-2 py-1 rounded">
-                <option value="">--</option>
-                {Object.keys(furcationIcons).map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Sangrado / Supuración</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['Mesial', 'Vestibular', 'Distal'].map(pos => (
-                  <input
-                    key={pos}
-                    type="text"
-                    placeholder={pos}
-                    value={teethData[selectedTooth]?.[`Sangrado_${pos}`] || ''}
-                    onChange={(e) => handleFieldChange(`Sangrado_${pos}`, e.target.value)}
-                    className="border rounded px-2 py-1 text-sm"
-                  />
-                ))}
-              </div>
-            </div>
-            <div>
-              <label>Placa</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['Mesial', 'Vestibular', 'Distal'].map(pos => (
-                  <input
-                    key={pos}
-                    type="text"
-                    placeholder={pos}
-                    value={teethData[selectedTooth]?.[`Placa_${pos}`] || ''}
-                    onChange={(e) => handleFieldChange(`Placa_${pos}`, e.target.value)}
-                    className="border rounded px-2 py-1 text-sm"
-                  />
-                ))}
-              </div>
-            </div>
-            <div>
-              <label>Anchura de encía (mm)</label>
-              <input type="number" value={teethData[selectedTooth]?.Anchura || ''} onChange={(e) => handleFieldChange('Anchura', e.target.value)} className="w-full border px-2 py-1 rounded" />
-            </div>
-            <div>
-              <label>Margen gingival</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['Mesial', 'Vestibular', 'Distal'].map(pos => (
-                  <input
-                    key={pos}
-                    type="number"
-                    placeholder={pos}
-                    value={teethData[selectedTooth]?.[`Margen_${pos}`] || ''}
-                    onChange={(e) => handleFieldChange(`Margen_${pos}`, e.target.value)}
-                    className="border rounded px-2 py-1 text-sm"
-                  />
-                ))}
-              </div>
-            </div>
-            <div>
-              <label>Profundidad de sondaje</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['Mesial', 'Vestibular', 'Distal'].map(pos => (
-                  <input
-                    key={pos}
-                    type="number"
-                    placeholder={pos}
-                    value={teethData[selectedTooth]?.[`Profundidad_${pos}`] || ''}
-                    onChange={(e) => handleFieldChange(`Profundidad_${pos}`, e.target.value)}
-                    className="border rounded px-2 py-1 text-sm"
-                  />
-                ))}
-              </div>
-            </div>
+            {/* Overlay de números */}
+            {Object.entries(toothNumberPosition).map(([n, pos]) => (
+              <span
+                key={n}
+                style={{
+                  position: "absolute",
+                  top: pos.top,
+                  left: pos.left,
+                  transform: "translate(-50%, -50%)",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  color: "#2233aa",
+                  textShadow: "0 1px 4px #fff"
+                }}
+                pointerEvents="none"
+              >{n}</span>
+            ))}
           </div>
-        </motion.div>
-      )}
+          <TeethTable arcada="inferior" />
+        </div>
+      </div>
     </div>
   );
-};
-
-export default PatientPeriodontogram;
+}
