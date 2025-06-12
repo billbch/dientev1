@@ -30,6 +30,7 @@ function App() {
     <>
       <Routes>
         <Route exact path="/" element={<DashboardDiente />} />
+        <Route exact path="/dashboard" element={<DashboardDiente />} />
         <Route path="/pacientes" element={<Pacientes />} />
         <Route path="/pacientes/:patientId" element={<PatientProfile />} />
        
