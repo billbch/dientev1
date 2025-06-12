@@ -132,7 +132,8 @@ const ToothPanel = ({ selectedTooth, setTreatment, onClose }) => {
 };
 
 const PatientOdontogramImage = () => {
-  const [selectedTooth, setSelectedTooth] = useState(null);
+  // Restauramos el estado local para controlar la visualización del panel y los tratamientos
+  const [selectedTooth, setSelectedTooth] = useState(null); // Usar estado local
   const [showPanel, setShowPanel] = useState(false);
   const [toothTreatments, setToothTreatments] = useState({});
   const [isDrawingMode, setIsDrawingMode] = useState(false);
@@ -155,17 +156,42 @@ const PatientOdontogramImage = () => {
       canvas.height = img.height;
       redrawStrokes();
     };
-  }, []);
+    // Asegurarse de dibujar si la imagen ya está cargada (ej. en re-renders)
+    if (img.complete) {
+        // Añadir un pequeño retardo para asegurar que el canvas esté listo después del render inicial
+        setTimeout(redrawStrokes, 0);
+    }
+  }, [strokes]); // Dependencia en strokes para redibujar al añadir un trazo
 
-  // Redibujar todos los trazos
+  // Redibujar todos los trazos y los límites de los dientes
   const redrawStrokes = () => {
     const canvas = canvasRef.current;
     const img = imageRef.current;
     if (!canvas || !img) return;
 
     const ctx = canvas.getContext('2d');
+    // Vamos a redibujar la imagen cada vez para simplificar la lógica de borrado/redibujado de trazos
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // Dibuja los límites de los dientes basados en teethMap (líneas rojas)
+    ctx.strokeStyle = '#FF0000'; // Color rojo
+    ctx.lineWidth = 1; // Grosor de la línea
+    ctx.setLineDash([5, 5]); // Líneas discontinuas (opcional, puedes quitar si prefieres sólidas)
+
+    teethMap.forEach(tooth => {
+        // Convertir porcentajes a píxeles absolutos
+        const x = (parseFloat(tooth.left) / 100) * canvas.width;
+        const y = (parseFloat(tooth.top) / 100) * canvas.height;
+        const width = (parseFloat(tooth.width) / 100) * canvas.width;
+        // Asumiendo que la altura para cada fila de dientes es el 50% de la altura total de la imagen
+        const height = canvas.height * 0.5;
+
+        // Dibuja el rectángulo para el diente
+        ctx.strokeRect(x, y, width, height);
+    });
+
+    ctx.setLineDash([]); // Restablecer a líneas sólidas para los trazos del usuario
 
     // Dibujar todos los trazos guardados
     strokes.forEach(stroke => {
@@ -187,38 +213,42 @@ const PatientOdontogramImage = () => {
       ctx.stroke();
     });
 
-    // Dibujar el trazo actual si existe
-    if (currentStrokeRef.current && currentStrokeRef.current.points.length > 1) {
-      ctx.beginPath();
-      ctx.strokeStyle = currentStrokeRef.current.color;
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      
-      const points = currentStrokeRef.current.points;
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
+    // Dibujar el trazo actual si existe (solo si estamos dibujando)
+    if (isDrawing && currentStrokeRef.current && currentStrokeRef.current.points.length > 1) {
+        ctx.beginPath();
+        ctx.strokeStyle = currentStrokeRef.current.color;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        const points = currentStrokeRef.current.points;
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.stroke();
       }
-      ctx.stroke();
-    }
   };
 
-  // Manejo de eventos del mouse
+  // Manejo de eventos del mouse (adaptados para dibujar solo si isDrawingMode es true)
   const handleMouseDown = (e) => {
     if (!isDrawingMode) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
     setIsDrawing(true);
     currentStrokeRef.current = {
       color: selectedColor,
       points: [{ x, y }]
     };
+     // Dibujar el punto inicial inmediatamente
+     redrawStrokes();
   };
 
   const handleMouseMove = (e) => {
@@ -227,8 +257,10 @@ const PatientOdontogramImage = () => {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     currentStrokeRef.current.points.push({ x, y });
     redrawStrokes();
@@ -236,118 +268,110 @@ const PatientOdontogramImage = () => {
 
   const handleMouseUp = () => {
     if (!isDrawingMode || !isDrawing) return;
-    
+
     if (currentStrokeRef.current && currentStrokeRef.current.points.length > 1) {
       const newStroke = { ...currentStrokeRef.current };
-      setStrokes(prev => {
-        const newStrokes = [...prev, newStroke];
-        // Redibujar inmediatamente después de actualizar el estado
-        requestAnimationFrame(() => {
-          const canvas = canvasRef.current;
-          const img = imageRef.current;
-          if (!canvas || !img) return;
-
-          const ctx = canvas.getContext('2d');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          // Dibujar todos los trazos incluyendo el nuevo
-          newStrokes.forEach(stroke => {
-            if (!stroke || !stroke.color || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
-            ctx.beginPath();
-            ctx.strokeStyle = stroke.color;
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            stroke.points.forEach((point, index) => {
-              if (index === 0) {
-                ctx.moveTo(point.x, point.y);
-              } else {
-                ctx.lineTo(point.x, point.y);
-              }
-            });
-
-            ctx.stroke();
-          });
-        });
-        return newStrokes;
-      });
+      setStrokes(prev => [...prev, newStroke]);
+    } else if (currentStrokeRef.current && currentStrokeRef.current.points.length === 1) {
+        // Si solo hay un punto, no es un trazo, descartar o manejar como clic de punto si se desea
+        // Por ahora, simplemente descartamos
     }
-    
-    currentStrokeRef.current = null;
+
     setIsDrawing(false);
+    currentStrokeRef.current = null; // Limpiar el trazo actual
+     // Asegurarse de que el estado ha sido actualizado antes de redibujar
+     // redrawStrokes() se llama automáticamente por la dependencia en 'strokes' si se añade un nuevo stroke
   };
 
   const handleMouseLeave = () => {
-    if (isDrawing) handleMouseUp();
-  };
-
-  const handleToothClick = (toothNumber) => {
-    if (isDrawingMode) return;
-    setSelectedTooth(toothNumber);
-    setShowPanel(true);
-  };
-
-  const handleClosePanel = () => {
-    setShowPanel(false);
-    setSelectedTooth(null);
-  };
-
-  const setTreatment = (toothNumber, treatment) => {
-    setToothTreatments(prev => ({
-      ...prev,
-      [toothNumber]: treatment
-    }));
-    handleClosePanel();
-  };
-
-  const handleUndo = () => {
-    if (strokes.length > 0) {
-      setStrokes(prev => {
-        const newStrokes = prev.slice(0, -1);
-        // Redibujar después de deshacer
-        requestAnimationFrame(redrawStrokes);
-        return newStrokes;
-      });
+    // Si el mouse sale del canvas mientras se dibuja, finalizar el trazo
+    if (isDrawingMode && isDrawing) {
+      handleMouseUp();
     }
   };
 
-  // Redibujar cuando cambian los trazos (como respaldo y para carga inicial)
-  useEffect(() => {
-    redrawStrokes();
-  }, [strokes]);
-
-  const renderTreatmentIcon = (treatment) => {
-    const treatmentData = treatmentIcons[treatment];
-    if (!treatmentData) return null;
-    const { icon, color, borderColor } = treatmentData;
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          top: '25%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          color: color,
-          borderColor: borderColor,
-          borderWidth: borderColor ? '2px' : '0',
-          borderStyle: 'solid',
-          borderRadius: '50%',
-          width: '45%',
-          height: '6%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '20px',
-          backgroundColor: color === '#FFFFFF' ? 'white' : 'transparent'
-        }}
-      >
-        {icon}
-      </div>
-    );
+  // Manejo de clics en dientes (solo si NO estamos en modo dibujo)
+  const handleToothClick = (toothNumber) => {
+      if (!isDrawingMode) { // Solo permitir clics si NO estamos dibujando
+          setSelectedTooth(toothNumber); // Usar estado local
+          setShowPanel(true); // Mostrar panel
+      }
   };
 
+  const handleClosePanel = () => {
+    setSelectedTooth(null); // Limpiar estado local
+    setShowPanel(false); // Ocultar panel
+  };
+
+  const setTreatment = (toothNumber, treatment) => {
+    setToothTreatments(prev => ({ ...prev, [toothNumber]: treatment }));
+    // Podrías cerrar el panel después de seleccionar un tratamiento
+    // handleClosePanel();
+  };
+
+   const handleUndo = () => {
+       if (!isDrawingMode || strokes.length === 0) return; // Solo deshacer en modo dibujo
+       setStrokes(prev => prev.slice(0, -1));
+       // Redibujar se llama automáticamente por la dependencia en 'strokes'
+   };
+
+  // Función para renderizar el ícono del tratamiento sobre el diente
+  const renderTreatmentIcon = (toothNumber) => {
+      const treatment = toothTreatments[toothNumber];
+      if (!treatment || !treatmentIcons[treatment]) return null;
+
+      const { icon, color } = treatmentIcons[treatment];
+
+      // Buscar la posición del diente en teethMap
+      const toothData = teethMap.find(tooth => tooth.id === toothNumber);
+
+      // Si no se encuentra el diente o no hay datos de posición, no renderizar
+      if (!toothData) return null;
+
+      // Obtener las posiciones left y top, y el width del diente como números
+      const toothLeft = parseFloat(toothData.left);
+      const toothWidth = parseFloat(toothData.width);
+      const toothTop = parseFloat(toothData.top);
+
+      // Calcular el centro horizontal del diente en porcentaje
+      let centerX = 50;
+      let centerY;
+
+      // Aplicar una lógica de posición diferente para dientes inferiores (IDs 31-48)
+      if (toothNumber >= 31 && toothNumber <= 48) {
+          // Lógica para dientes inferiores
+          // Ajustamos la posición vertical ligeramente diferente, por ejemplo, 55% en lugar de 50% sumado al top
+          centerY =  30; // Puedes ajustar este valor (55) según necesites
+          // Si necesitas ajustar horizontalmente también, podrías hacer algo como:
+          // centerX = toothLeft + (toothWidth / 2) + 2; // Mover 2% a la derecha, por ejemplo
+
+      } else {
+          // Lógica para dientes superiores (o cualquier otro caso no especificado)
+          centerY = toothTop + 27; // Mantener la lógica anterior para superiores
+          // centerX se calcula igual para superiores en este ejemplo
+      }
+
+      return (
+          <div
+              key={`treatment-${toothNumber}`}
+              style={{
+                  position: 'absolute',
+                  // Usar las posiciones calculadas (ajustadas si es necesario para inferiores)
+                  left: `${centerX}%`,
+                  top: `${centerY}%`,
+                  color: color,
+                  fontSize: '20px', // Ajustar tamaño si es necesario
+                  transform: 'translate(-50%, -50%)', // Centrar el ícono respecto a su propio punto de origen
+                  pointerEvents: 'none' // No interferir con clics en el canvas
+              }}
+          >
+              {icon}
+          </div>
+      );
+  };
+
+  // Mapa de posiciones de los dientes en la imagen (necesitas definirlo correctamente)
+  // ESTO DEBE COINCIDIR CON LA IMAGEN odontograma2.png
   const teethMap = [
     { id: 18, top: '0%', left: '0%',    width: '7.4%' },
     { id: 17, top: '0%', left: '7.3%',  width: '7.4%' },
@@ -384,75 +408,70 @@ const PatientOdontogramImage = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative">
-        <div className="flex items-center space-x-3 mb-6">
-          <span className="text-3xl">🦷</span>
-          <h3 className="text-lg font-semibold text-blue-600">Odontograma Imagen</h3>
-        </div>
+    <div className="overflow-x-auto rounded-lg bg-white p-4 shadow border">
+
         <DrawingControls
-          selectedColor={selectedColor}
-          setSelectedColor={setSelectedColor}
-          isDrawingMode={isDrawingMode}
-          setIsDrawingMode={setIsDrawingMode}
-          onUndo={handleUndo}
-        />
-        <div className="relative">
-          <img 
-            ref={imageRef}
-            src={odontogramaImage} 
-            alt="Odontograma" 
-            className="w-full" 
-            style={{ display: 'none' }}
-          />
-          <canvas
-            ref={canvasRef}
-            className="w-full"
-            style={{ 
-              cursor: isDrawingMode ? 'crosshair' : 'default',
-              pointerEvents: isDrawingMode ? 'auto' : 'none'
-            }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-          />
-          <div 
-            className="absolute top-0 left-0 w-full h-full"
-            style={{ 
-              zIndex: 2,
-              pointerEvents: isDrawingMode ? 'none' : 'auto'
-            }}
-          >
-            {teethMap.map((tooth) => (
-              <div
-                key={tooth.id}
-                style={{
-                  position: 'absolute',
-                  top: tooth.top,
-                  left: tooth.left,
-                  width: tooth.width,
-                  height: '50%',
-                  pointerEvents: isDrawingMode ? 'none' : 'auto'
-                }}
-                className={`cursor-pointer ${selectedTooth === tooth.id ? 'bg-blue-200 bg-opacity-50 rounded-md' : ''}`}
-                onClick={() => handleToothClick(tooth.id)}
-              >
-                {toothTreatments[tooth.id] && renderTreatmentIcon(toothTreatments[tooth.id])}
-              </div>
-            ))}
-          </div>
+            selectedColor={selectedColor}
+            setSelectedColor={setSelectedColor}
+            isDrawingMode={isDrawingMode}
+            setIsDrawingMode={setIsDrawingMode}
+            onUndo={handleUndo}
+         />
+
+        <div className="relative flex justify-center my-2">
+            <img
+              src={odontogramaImage}
+              alt="Odontograma"
+              ref={imageRef}
+              className="w-full bg-white rounded-xl shadow border"
+              draggable={false}
+            />
+            <canvas
+              ref={canvasRef}
+              className="absolute top-0 left-0 w-full h-full"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              style={{ pointerEvents: isDrawingMode ? 'auto' : 'none' }}
+            />
+
+            {!isDrawingMode && (
+               <div
+                 className="absolute top-0 left-0 w-full h-full"
+                 style={{ zIndex: 2, pointerEvents: 'auto' }}
+               >
+                 {teethMap.map((tooth) => (
+                   <div
+                     key={tooth.id}
+                     style={{
+                       position: 'absolute',
+                       top: tooth.top,
+                       left: tooth.left,
+                       width: tooth.width,
+                       height: '50%',
+                     }}
+                     className={`cursor-pointer ${selectedTooth === tooth.id ? 'bg-blue-200 bg-opacity-50 rounded-md' : ''}`}
+                     onClick={() => handleToothClick(tooth.id)}
+                   >
+                     {toothTreatments[tooth.id] && renderTreatmentIcon(tooth.id)}
+                   </div>
+                 ))}
+               </div>
+            )}
+
         </div>
-      </div>
-      <AnimatePresence>
-        {showPanel && selectedTooth && (
-          <ToothPanel
-            selectedTooth={selectedTooth}
-            setTreatment={setTreatment}
-            onClose={handleClosePanel}
-          />
-        )}
-      </AnimatePresence>
+
+        <AnimatePresence>
+            {showPanel && selectedTooth && (
+                <ToothPanel
+                    selectedTooth={selectedTooth}
+                    setTreatment={setTreatment}
+                    onClose={handleClosePanel}
+                />
+            )}
+        </AnimatePresence>
+
     </div>
   );
 };

@@ -17,9 +17,19 @@ import PatientDentalHistory from './PacientesInfo/PatientDentalHistory';
 const PatientProfile = () => {
   const { patientId } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('info');
+  const [activeTab, setActiveTab] = useState('history');
+  const [activeSubTab, setActiveSubTab] = useState('personal');
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [appointmentData, setAppointmentData] = useState({
+    date: '',
+    time: '',
+    type: '',
+    duration: '30',
+    notes: '',
+    priority: 'normal'
+  });
   const menuRef = useRef(null);
 
   // Datos de ejemplo del paciente
@@ -74,45 +84,75 @@ const PatientProfile = () => {
     ],
   };
 
-  // Definir los 9 tabs con sus iconos
+  // Definir los 3 tabs principales con sus subcategorías
   const tabs = [
-    { id: 'info', label: 'Información Personal', icon: 'user' },
-    { id: 'medical', label: 'Historial Médico', icon: 'heart' },
-    { id: 'dental', label: 'Historial Odontológico', icon: 'tooth' },
-    { id: 'evolutions', label: 'Evoluciones', icon: 'chart-line' },
-    { id: 'odontogram', label: 'Odontograma', icon: 'tooth' },
-    { id: 'periodontogram', label: 'Periodontograma', icon: 'gums' },
-    { id: 'rx', label: 'Rx y Documentos', icon: 'x-ray' },
-    { id: 'prescriptions', label: 'Recetas', icon: 'prescription' },
-    { id: 'clinical', label: 'Documentos Clínicos', icon: 'file-medical' },
-    { id: 'consent', label: 'Consentimientos', icon: 'signature' },
+    { 
+      id: 'history', 
+      label: 'Historiales', 
+      icon: 'clipboard-list',
+      subTabs: [
+        { id: 'personal', label: 'Información Personal' },
+        { id: 'medical', label: 'Historial Médico' },
+        { id: 'dental', label: 'Historial Odontológico' }
+      ]
+    },
+    { 
+      id: 'clinical', 
+      label: 'Clínica', 
+      icon: 'stethoscope',
+      subTabs: [
+        { id: 'evolutions', label: 'Evoluciones' },
+        { id: 'odontogram', label: 'Odontograma' },
+        { id: 'periodontogram', label: 'Periodontograma' }
+      ]
+    },
+    { 
+      id: 'documents', 
+      label: 'Documentos', 
+      icon: 'folder',
+      subTabs: [
+        { id: 'rx', label: 'Rx y Documentos' },
+        { id: 'clinical', label: 'Documentos Clínicos' },
+        { id: 'consent', label: 'Consentimientos' }
+      ]
+    }
   ];
 
-  // Función para renderizar el contenido según el tab activo
+  // Función para renderizar el contenido según el tab y subtab activo
   const renderTabContent = () => {
-    switch (activeTab) {
-      case 'info':
-        return <PatientPersonalInfo patientData={patientData} />;
-      case 'medical':
-        return <PatientMedicalHistory patientData={patientData} />;
-      case 'dental':
-        return <PatientDentalHistory patientData={patientData} />;
-      case 'evolutions':
-        return <PatientEvolutions patientData={patientData} />;
-      case 'odontogram':
-        return <PatientOdontogram patientData={patientData} />;
-      case 'periodontogram':
-        return <PatientPeriodontogram patientData={patientData} />;
-      case 'rx':
-        return <PatientRadiographs patientData={patientData} />;
-      case 'prescriptions':
-        return <PatientPrescriptions patientData={patientData} />;
-      case 'clinical':
-        return <PatientClinicalDocuments patientData={patientData} />;
-      case 'consent':
-        return <PatientConsents patientData={patientData} />;
-      default:
-        return null;
+    if (activeTab === 'history') {
+      switch (activeSubTab) {
+        case 'personal':
+          return <PatientPersonalInfo patientData={patientData} />;
+        case 'medical':
+          return <PatientMedicalHistory patientData={patientData} />;
+        case 'dental':
+          return <PatientDentalHistory patientData={patientData} />;
+        default:
+          return null;
+      }
+    } else if (activeTab === 'clinical') {
+      switch (activeSubTab) {
+        case 'evolutions':
+          return <PatientEvolutions patientData={patientData} />;
+        case 'odontogram':
+          return <PatientOdontogram patientData={patientData} />;
+        case 'periodontogram':
+          return <PatientPeriodontogram patientData={patientData} />;
+        default:
+          return null;
+      }
+    } else if (activeTab === 'documents') {
+      switch (activeSubTab) {
+        case 'rx':
+          return <PatientRadiographs patientData={patientData} />;
+        case 'clinical':
+          return <PatientClinicalDocuments patientData={patientData} />;
+        case 'consent':
+          return <PatientConsents patientData={patientData} />;
+        default:
+          return null;
+      }
     }
   };
 
@@ -213,6 +253,20 @@ const PatientProfile = () => {
     }
   }, []);
 
+  const handleAppointmentSubmit = (e) => {
+    e.preventDefault();
+    console.log('Nueva cita:', appointmentData);
+    setShowAppointmentModal(false);
+    setAppointmentData({
+      date: '',
+      time: '',
+      type: '',
+      duration: '30',
+      notes: '',
+      priority: 'normal'
+    });
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -220,9 +274,7 @@ const PatientProfile = () => {
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1">
           <div className="px-4 sm:px-6 lg:px-8 py-4 w-full max-w-9xl mx-auto">
-            {/* Contenedor principal que integra la información del paciente y el contenido */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-              {/* Encabezado del perfil - Rediseñado para ser más compacto */}
               <div className="p-4 border-b border-gray-100">
                 <div className="flex items-center space-x-4">
                   <img
@@ -241,7 +293,10 @@ const PatientProfile = () => {
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <button className="btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm">
+                        <button 
+                          onClick={() => setShowAppointmentModal(true)}
+                          className="btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm"
+                        >
                           Nueva Cita
                         </button>
                         <button className="btn bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm">
@@ -268,14 +323,18 @@ const PatientProfile = () => {
                 </div>
               </div>
 
-              {/* Barra de navegación - Rediseñada para ser más compacta y estar integrada */}
+              {/* Navegación principal y secundaria */}
               <div className="border-b border-gray-100">
-                <div className="flex space-x-1 p-2 overflow-x-auto">
+                {/* Tabs principales */}
+                <div className="flex space-x-1 p-2 border-b border-gray-100">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setActiveSubTab(tab.subTabs[0].id);
+                      }}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                         activeTab === tab.id
                           ? 'bg-blue-50 text-blue-600'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -288,9 +347,28 @@ const PatientProfile = () => {
                     </button>
                   ))}
                 </div>
+
+                {/* Subtabs */}
+                {tabs.find(tab => tab.id === activeTab)?.subTabs && (
+                  <div className="flex space-x-1 p-2">
+                    {tabs.find(tab => tab.id === activeTab)?.subTabs.map((subTab) => (
+                      <button
+                        key={subTab.id}
+                        onClick={() => setActiveSubTab(subTab.id)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                          activeSubTab === subTab.id
+                            ? 'bg-gray-100 text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                      >
+                        {subTab.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Contenido del tab activo - Ahora integrado en el mismo card */}
+              {/* Contenido del tab activo */}
               <div className="p-4">
                 {renderTabContent()}
               </div>
@@ -298,6 +376,118 @@ const PatientProfile = () => {
           </div>
         </main>
       </div>
+
+      {/* Modal de Nueva Cita */}
+      {showAppointmentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Nueva Cita</h2>
+              <button 
+                onClick={() => setShowAppointmentModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleAppointmentSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Fecha</label>
+                <input
+                  type="date"
+                  value={appointmentData.date}
+                  onChange={(e) => setAppointmentData({...appointmentData, date: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Hora</label>
+                <input
+                  type="time"
+                  value={appointmentData.time}
+                  onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Tipo de Cita</label>
+                <select
+                  value={appointmentData.type}
+                  onChange={(e) => setAppointmentData({...appointmentData, type: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Seleccionar tipo</option>
+                  <option value="consulta">Consulta</option>
+                  <option value="limpieza">Limpieza Dental</option>
+                  <option value="endodoncia">Endodoncia</option>
+                  <option value="ortodoncia">Ortodoncia</option>
+                  <option value="extraccion">Extracción</option>
+                  <option value="implante">Implante</option>
+                  <option value="blanqueamiento">Blanqueamiento</option>
+                  <option value="control">Control</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Duración (minutos)</label>
+                <select
+                  value={appointmentData.duration}
+                  onChange={(e) => setAppointmentData({...appointmentData, duration: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="30">30 minutos</option>
+                  <option value="45">45 minutos</option>
+                  <option value="60">1 hora</option>
+                  <option value="90">1.5 horas</option>
+                  <option value="120">2 horas</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Prioridad</label>
+                <select
+                  value={appointmentData.priority}
+                  onChange={(e) => setAppointmentData({...appointmentData, priority: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="low">Baja</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">Alta</option>
+                  <option value="urgent">Urgente</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Notas</label>
+                <textarea
+                  value={appointmentData.notes}
+                  onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
+                  rows="3"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Añade notas o detalles adicionales..."
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAppointmentModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md"
+                >
+                  Agendar Cita
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
